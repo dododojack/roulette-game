@@ -1,18 +1,31 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class RouletteWheelController : MonoBehaviour
 {
-    public GameObject ball; // ¤Ş¥Î Ball ªºª«¥ó
+    public GameObject ball; // å¼•ç”¨ Ball çš„ç‰©ä»¶
     public float minRotationSpeed = 300f;
     public float maxRotationSpeed = 700f;
     public float deceleration = 10f;
     private float currentSpeed;
     private bool isSpinning = false;
 
-    public int totalSegments = 37; // °Ï°ì¼Æ¶q
+    public int totalSegments = 37; // å€åŸŸæ•¸é‡
 
-    private float rotationTime; // ±ÛÂàªº®É¶¡
-    private float timeSpentSpinning = 0f; // ¥Î¨Ó°O¿ı¤w¸g¹Lªº®É¶¡
+    private float rotationTime; // æ—‹è½‰çš„æ™‚é–“
+    private float timeSpentSpinning = 0f; // ç”¨ä¾†è¨˜éŒ„å·²ç¶“éçš„æ™‚é–“
+
+    // å®šç¾©æ¯å€‹æ•¸å­—å°æ‡‰çš„è§’åº¦
+    private Dictionary<int, float> numberAngles = new Dictionary<int, float>
+    {
+        { 0, 0f }, { 32, 9.73f }, { 15, 19.46f }, { 19, 29.19f }, { 4, 38.92f }, { 21, 48.65f },
+        { 2, 58.38f }, { 25, 68.11f }, { 17, 77.84f }, { 34, 87.57f }, { 6, 97.30f }, { 27, 107.03f },
+        { 13, 116.76f }, { 36, 126.49f }, { 11, 136.22f }, { 30, 145.95f }, { 8, 155.68f },
+        { 23, 165.41f }, { 10, 175.14f }, { 5, 184.87f }, { 24, 194.60f }, { 16, 204.33f },
+        { 33, 214.06f }, { 1, 223.79f }, { 20, 233.52f }, { 14, 243.25f }, { 31, 252.98f },
+        { 9, 262.71f }, { 22, 272.44f }, { 18, 282.17f }, { 29, 291.90f }, { 7, 301.63f },
+        { 28, 311.36f }, { 12, 321.09f }, { 35, 330.82f }, { 3, 340.55f }, { 26, 350.28f }
+    };
 
     void Update()
     {
@@ -20,19 +33,19 @@ public class RouletteWheelController : MonoBehaviour
         {
             timeSpentSpinning += Time.deltaTime;
 
-            // «ùÄò±ÛÂà
+            // æŒçºŒæ—‹è½‰
             transform.Rotate(0, 0, currentSpeed * Time.deltaTime);
 
-            // ´î³t
+            // æ¸›é€Ÿ
             currentSpeed = Mathf.Lerp(currentSpeed, 0, deceleration * Time.deltaTime);
 
-            // ·í±ÛÂà®É¶¡¶W¹L³]©wªº®É¶¡¡A°±¤î±ÛÂà
+            // ç•¶æ—‹è½‰æ™‚é–“è¶…éè¨­å®šçš„æ™‚é–“ï¼Œåœæ­¢æ—‹è½‰
             if (timeSpentSpinning >= rotationTime)
             {
                 isSpinning = false;
                 currentSpeed = 0;
 
-                // ·íÂà½L°±¤î«á¡A­pºâ²yªº¦ì¸m
+                // ç•¶è½‰ç›¤åœæ­¢å¾Œï¼Œè¨ˆç®—çƒçš„ä½ç½®
                 float finalAngle = transform.eulerAngles.z % 360;
                 DetermineResult(finalAngle);
             }
@@ -43,14 +56,14 @@ public class RouletteWheelController : MonoBehaviour
     {
         if (!isSpinning)
         {
-            // ÀH¾÷¿ï¾Ü±ÛÂà®É¶¡¡A5¨ì7¬í¤§¶¡
+            // éš¨æ©Ÿé¸æ“‡æ—‹è½‰æ™‚é–“ï¼Œ5åˆ°7ç§’ä¹‹é–“
             rotationTime = UnityEngine.Random.Range(5f, 7f);
 
-            // ­pºâ»İ­nªºÂà³t¨Ó¹F¨ì¥Ø¼Ğ±ÛÂà®É¶¡
-            float totalRotation = 360f * rotationTime / 2f; // ±ÛÂàÁ`¨¤«×
-            currentSpeed = totalRotation / rotationTime; // ®Ú¾Ú®É¶¡­pºâ³t«×
+            // è¨ˆç®—éœ€è¦çš„è½‰é€Ÿä¾†é”åˆ°ç›®æ¨™æ—‹è½‰æ™‚é–“
+            float totalRotation = 360f * rotationTime / 2f; // æ—‹è½‰ç¸½è§’åº¦
+            currentSpeed = totalRotation / rotationTime; // æ ¹æ“šæ™‚é–“è¨ˆç®—é€Ÿåº¦
 
-            timeSpentSpinning = 0f; // ­«¸m®É¶¡
+            timeSpentSpinning = 0f; // é‡ç½®æ™‚é–“
 
             isSpinning = true;
         }
@@ -58,25 +71,33 @@ public class RouletteWheelController : MonoBehaviour
 
     private void DetermineResult(float finalAngle)
     {
-        // ­pºâ¨C­Ó°Ï°ìªº¨¤«×½d³ò
+        // è¨ˆç®—æ¯å€‹å€åŸŸçš„è§’åº¦ç¯„åœ
         float segmentSize = 360f / totalSegments;
 
-        // ­pºâ³Ì²×µ²ªGªº°Ï°ì¯Á¤Ş
+        // è¨ˆç®—æœ€çµ‚çµæœçš„å€åŸŸç´¢å¼•
         int resultIndex = Mathf.FloorToInt(finalAngle / segmentSize);
 
-        Debug.Log("µ²ªG¯Á¤Ş: " + resultIndex);
+        Debug.Log("çµæœç´¢å¼•: " + resultIndex);
 
-        // ³]¸m²yªº¦ì¸m
+        // è¨­ç½®çƒçš„ä½ç½®
         if (ball != null)
         {
-            float ballAngle = (resultIndex * segmentSize) + (segmentSize / 2); // ²yªº¦ì¸m¬O°Ï°ìªº¤¤¤ß
-            SetBallPosition(ballAngle);
+            // ç²å–çµæœç´¢å¼•å°æ‡‰çš„è§’åº¦
+            float ballAngle;
+            if (numberAngles.TryGetValue(resultIndex, out ballAngle))
+            {
+                SetBallPosition(ballAngle);
+            }
+            else
+            {
+                Debug.LogError("ç„¡æ³•æ‰¾åˆ°å°æ‡‰çš„è§’åº¦!");
+            }
         }
     }
 
     private void SetBallPosition(float angle)
     {
-        float radius = 2f; // ®Ú¾ÚÂà½L¤j¤p½Õ¾ã
+        float radius = 2f; // æ ¹æ“šè½‰ç›¤å¤§å°èª¿æ•´
         float radians = angle * Mathf.Deg2Rad;
         Vector3 newPosition = new Vector3(
             radius * Mathf.Cos(radians),
@@ -84,8 +105,8 @@ public class RouletteWheelController : MonoBehaviour
             0
         );
 
-        // ³]¸m²yªº¦ì¸m¬Û¹ï©óÂà½Lªº¤¤¤ß
+        // è¨­ç½®çƒçš„ä½ç½®ç›¸å°æ–¼è½‰ç›¤çš„ä¸­å¿ƒ
         ball.transform.localPosition = newPosition;
-        ball.SetActive(true); // ½T«O²y³Q±Ò¥Î
+        ball.SetActive(true); // ç¢ºä¿çƒè¢«å•Ÿç”¨
     }
 }
